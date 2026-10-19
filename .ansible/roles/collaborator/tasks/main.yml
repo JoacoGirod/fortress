@@ -1,0 +1,37 @@
+---
+- name: Create collaborator user (no sudo, unprivileged shell)
+  become: true
+  ansible.builtin.user:
+    name: "{{ collaborator_user_name }}"
+    shell: "{{ collaborator_shell }}"
+    create_home: true
+    # Deliberately NOT in the sudo group.
+
+- name: Add SSH key for collaborator
+  become: true
+  ansible.posix.authorized_key:
+    user: "{{ collaborator_user_name }}"
+    key: "{{ collaborator_ssh_key }}"
+    exclusive: true
+
+- name: Ensure collaborator has no sudo privileges (remove any stale sudoers drop-in)
+  become: true
+  ansible.builtin.file:
+    path: "/etc/sudoers.d/{{ collaborator_user_name }}"
+    state: absent
+
+- name: Remove collaborator from sudo group if present
+  become: true
+  ansible.builtin.user:
+    name: "{{ collaborator_user_name }}"
+    groups: ""
+    append: false
+
+- name: Create collaborator work directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ collaborator_workdir }}"
+    state: directory
+    owner: "{{ collaborator_user_name }}"
+    group: "{{ collaborator_user_name }}"
+    mode: '0750'

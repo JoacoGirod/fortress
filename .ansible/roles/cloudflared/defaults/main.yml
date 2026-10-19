@@ -1,0 +1,18 @@
+---
+# defaults file for cloudflared
+
+# Name of the tunnel created in Cloudflare (also used for the credentials file).
+cloudflared_tunnel_name: fortress
+
+# Public hostname that will route to the server's SSH over the tunnel.
+# Must be a subdomain of a zone you control in Cloudflare.
+cloudflared_ssh_hostname: "ssh.jgirod.com.ar"
+
+# Local SSH endpoint the tunnel forwards to (the hardened SSH port).
+cloudflared_ssh_service: "ssh://localhost:2221"
+
+# System user/group the daemon runs as.
+cloudflared_user: cloudflared
+
+# Directory holding tunnel config + credentials on the server.
+cloudflared_config_dir: /etc/cloudflared
