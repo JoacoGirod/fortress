@@ -1,0 +1,14 @@
+---
+# defaults file for collaborator
+
+# Username for the low-access collaborator
+collaborator_user_name: collaborator
+
+# Collaborator's SSH public key (private half generated locally, never committed)
+collaborator_ssh_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJNxD3vwk30NHKzjIogtNmxbQetnGtIheB6+yn6W23HE collaborator@fortress"
+
+# Shell for the collaborator
+collaborator_shell: /bin/bash
+
+# Where the collaborator is expected to work (owned by them, created on provision)
+collaborator_workdir: "/home/{{ collaborator_user_name }}/work"

@@ -22,3 +22,5 @@
     - role: geerlingguy.certbot
     - role: portal
     - role: neibo
+    - role: collaborator
+    - role: cloudflared

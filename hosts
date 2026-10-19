@@ -1,1 +1,1 @@
-192.168.0.192 ansible_user=ansible ansible_port=2221
+192.168.1.75 ansible_user=ansible ansible_port=2221

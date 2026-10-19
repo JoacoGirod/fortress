@@ -1,0 +1,78 @@
+---
+- name: Add Cloudflare GPG key
+  become: true
+  ansible.builtin.get_url:
+    url: https://pkg.cloudflare.com/cloudflare-main.gpg
+    dest: /etc/apt/trusted.gpg.d/cloudflare-main.gpg
+    mode: '0644'
+    force: true
+
+- name: Add cloudflared apt repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared {{ ansible_lsb.codename }} main"
+    state: present
+    filename: cloudflared
+    update_cache: true
+
+- name: Install cloudflared
+  become: true
+  ansible.builtin.package:
+    name: cloudflared
+    state: present
+
+- name: Ensure cloudflared config directory exists
+  become: true
+  ansible.builtin.file:
+    path: "{{ cloudflared_config_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+# --- One-time manual steps are documented in the role README. ---
+# The tunnel must be created interactively (browser auth) before this
+# role can start the service, because credentials require your Cloudflare login:
+#   cloudflared tunnel login
+#   cloudflared tunnel create {{ cloudflared_tunnel_name }}
+#   cloudflared tunnel route dns {{ cloudflared_tunnel_name }} {{ cloudflared_ssh_hostname }}
+# then copy ~/.cloudflared/<UUID>.json to {{ cloudflared_config_dir }}/{{ cloudflared_tunnel_name }}.json
+
+- name: Check tunnel credentials are present
+  become: true
+  ansible.builtin.stat:
+    path: "{{ cloudflared_config_dir }}/{{ cloudflared_tunnel_name }}.json"
+  register: cloudflared_creds
+
+- name: Fail with guidance if credentials are missing
+  ansible.builtin.fail:
+    msg: >-
+      Tunnel credentials not found at
+      {{ cloudflared_config_dir }}/{{ cloudflared_tunnel_name }}.json.
+      Run the one-time 'cloudflared tunnel login/create/route' steps
+      (see roles/cloudflared/README.md), place the JSON there, then re-run.
+  when: not cloudflared_creds.stat.exists
+
+- name: Template cloudflared ingress config
+  become: true
+  ansible.builtin.template:
+    src: config.yml.j2
+    dest: "{{ cloudflared_config_dir }}/config.yml"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart cloudflared
+
+- name: Install cloudflared systemd service (tunnel run)
+  become: true
+  ansible.builtin.command:
+    cmd: "cloudflared --config {{ cloudflared_config_dir }}/config.yml service install"
+    creates: /etc/systemd/system/cloudflared.service
+
+- name: Ensure cloudflared service is enabled and started
+  become: true
+  ansible.builtin.systemd:
+    name: cloudflared
+    state: started
+    enabled: true
+    daemon_reload: true

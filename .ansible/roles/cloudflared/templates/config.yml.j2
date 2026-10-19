@@ -1,0 +1,9 @@
+# Ansible managed - cloudflared tunnel ingress
+tunnel: {{ cloudflared_tunnel_name }}
+credentials-file: {{ cloudflared_config_dir }}/{{ cloudflared_tunnel_name }}.json
+
+ingress:
+  - hostname: {{ cloudflared_ssh_hostname }}
+    service: {{ cloudflared_ssh_service }}
+  # Catch-all: everything else gets a 404 (nothing else exposed via the tunnel)
+  - service: http_status:404

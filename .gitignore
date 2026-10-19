@@ -1,2 +1,14 @@
 .vscode
 .env
+hosts.bak
+
+# Cloudflare tunnel credentials (never commit)
+/etc/cloudflared/
+.cloudflared/
+*.pem
+*.key
+*cloudflared*.json
+
+# Collaborator PRIVATE key only (public key in role defaults is intentional)
+/collaborator
+/collaborator.pub

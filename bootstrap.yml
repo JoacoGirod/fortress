@@ -13,6 +13,7 @@
     ssh_allowed_users:
       - ansible
       - github
+      - collaborator
 
     ssh_port: 2221
 
