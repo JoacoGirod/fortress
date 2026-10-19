@@ -1,16 +1,25 @@
 ---
+- name: Ensure keyrings directory exists
+  become: true
+  ansible.builtin.file:
+    path: /usr/share/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
 - name: Add Cloudflare GPG key
   become: true
   ansible.builtin.get_url:
     url: https://pkg.cloudflare.com/cloudflare-main.gpg
-    dest: /etc/apt/trusted.gpg.d/cloudflare-main.gpg
+    dest: /usr/share/keyrings/cloudflare-main.gpg
     mode: '0644'
     force: true
 
 - name: Add cloudflared apt repository
   become: true
   ansible.builtin.apt_repository:
-    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared {{ ansible_lsb.codename }} main"
+    repo: "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared {{ ansible_lsb.codename }} main"
     state: present
     filename: cloudflared
     update_cache: true
